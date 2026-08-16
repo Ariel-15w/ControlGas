@@ -1,0 +1,2476 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="theme-color"
+    content="#0f172a"
+  >
+
+  <title>
+    Control diario de gas
+  </title>
+
+  <link
+    rel="stylesheet"
+    href="styles.css"
+  >
+</head>
+
+
+<body>
+
+
+<!-- =====================================================
+     CABECERA
+===================================================== -->
+
+<header class="topbar">
+
+  <div>
+
+    <p class="eyebrow">
+      CONTROL DE BODEGA
+    </p>
+
+    <h1>
+      Ventas de gas
+    </h1>
+
+    <p
+      class="subtle"
+      id="activeDayText"
+    >
+      Día sin iniciar
+    </p>
+
+    <p
+      class="live-clock"
+      id="liveClock"
+    >
+      Fecha y hora del dispositivo
+    </p>
+
+  </div>
+
+
+  <div class="topbar-actions">
+
+    <button
+      class="btn secondary"
+      id="exportBtn"
+      type="button"
+    >
+      Exportar respaldo
+    </button>
+
+
+    <label class="btn secondary file-btn">
+
+      Importar respaldo
+
+      <input
+        id="importInput"
+        type="file"
+        accept="application/json"
+        hidden
+      >
+
+    </label>
+
+  </div>
+
+</header>
+
+
+
+<!-- =====================================================
+     CONTENIDO
+===================================================== -->
+
+<main class="app-shell">
+
+
+  <!-- ===================================================
+       MENÚ
+  =================================================== -->
+
+  <nav
+    class="tabs"
+    aria-label="Secciones"
+  >
+
+    <button
+      class="tab active"
+      data-view="dashboard"
+      type="button"
+    >
+      Resumen
+    </button>
+
+
+    <button
+      class="tab"
+      data-view="opening"
+      type="button"
+    >
+      Apertura
+    </button>
+
+
+    <button
+      class="tab"
+      data-view="sales"
+      type="button"
+    >
+      Ventas
+    </button>
+
+
+    <button
+      class="tab"
+      data-view="accounts"
+      type="button"
+    >
+      Pendientes
+    </button>
+
+
+    <button
+      class="tab"
+      data-view="inventory"
+      type="button"
+    >
+      Inventario
+    </button>
+
+
+    <button
+      class="tab"
+      data-view="closing"
+      type="button"
+    >
+      Cierre
+    </button>
+
+
+    <button
+      class="tab"
+      data-view="history"
+      type="button"
+    >
+      Historial
+    </button>
+
+
+    <button
+      class="tab"
+      data-view="settings"
+      type="button"
+    >
+      Configuración
+    </button>
+
+  </nav>
+
+
+
+  <!-- ===================================================
+       RESUMEN
+  =================================================== -->
+
+  <section
+    class="view active"
+    id="view-dashboard"
+  >
+
+    <div class="section-heading">
+
+      <div>
+
+        <p class="eyebrow">
+          HOY
+        </p>
+
+        <h2>
+          Resumen del día
+        </h2>
+
+      </div>
+
+
+      <button
+        class="btn primary"
+        data-go="sales"
+        type="button"
+      >
+        + Registrar venta
+      </button>
+
+    </div>
+
+
+    <!-- MÉTRICAS -->
+
+    <div
+      class="metric-grid"
+      id="metricGrid"
+    ></div>
+
+
+
+    <div class="two-col">
+
+
+      <!-- INVENTARIO -->
+
+      <article class="card">
+
+        <div class="card-header">
+
+          <div>
+
+            <h3>
+              Inventario actual
+            </h3>
+
+            <p>
+              Llenos disponibles, vacíos y reservados.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div id="inventorySnapshot"></div>
+
+      </article>
+
+
+
+      <!-- PENDIENTES -->
+
+      <article class="card">
+
+        <div class="card-header">
+
+          <div>
+
+            <h3>
+              Pendientes
+            </h3>
+
+            <p>
+              Se generan automáticamente desde Ventas.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div id="pendingSnapshot"></div>
+
+      </article>
+
+    </div>
+
+
+
+    <!-- MOVIMIENTOS -->
+
+    <article class="card">
+
+      <div class="card-header">
+
+        <div>
+
+          <h3>
+            Últimos movimientos
+          </h3>
+
+          <p>
+            Ventas, pagos, devoluciones y retiros.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="table-wrap">
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>
+                Hora
+              </th>
+
+              <th>
+                Tipo
+              </th>
+
+              <th>
+                Cliente
+              </th>
+
+              <th>
+                Detalle
+              </th>
+
+              <th>
+                Monto
+              </th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody
+            id="recentMovementsBody"
+          ></tbody>
+
+        </table>
+
+      </div>
+
+    </article>
+
+  </section>
+
+
+
+  <!-- ===================================================
+       APERTURA
+  =================================================== -->
+
+  <section
+    class="view"
+    id="view-opening"
+  >
+
+    <div class="section-heading">
+
+      <div>
+
+        <p class="eyebrow">
+          PASO 1
+        </p>
+
+        <h2>
+          Apertura del día
+        </h2>
+
+        <p>
+          Registra el conteo físico real antes de empezar a vender.
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <form
+      id="openingForm"
+      class="card form-card"
+    >
+
+
+      <!-- HORA AUTOMÁTICA -->
+
+      <div class="auto-time main-time">
+
+        <span>
+          Fecha y hora automática
+        </span>
+
+        <strong
+          id="openingAutoDateTime"
+        >
+          —
+        </strong>
+
+      </div>
+
+
+
+      <!-- INVENTARIO INICIAL -->
+
+      <div class="material-grid">
+
+
+        <!-- DURAGAS -->
+
+        <fieldset class="gas-card duragas">
+
+          <legend>
+            Duragas amarillo
+          </legend>
+
+
+          <label>
+
+            Llenos disponibles
+
+            <input
+              id="duragasFull"
+              type="number"
+              min="0"
+              step="1"
+              value="126"
+              required
+            >
+
+          </label>
+
+
+          <label>
+
+            Vacíos
+
+            <input
+              id="duragasEmpty"
+              type="number"
+              min="0"
+              step="1"
+              value="63"
+              required
+            >
+
+          </label>
+
+
+          <label>
+
+            Llenos reservados
+
+            <input
+              id="duragasReserved"
+              type="number"
+              min="0"
+              step="1"
+              value="14"
+              required
+            >
+
+          </label>
+
+
+          <div class="inline-result">
+
+            Total físico:
+
+            <strong
+              id="duragasOpeningTotal"
+            >
+              203
+            </strong>
+
+          </div>
+
+        </fieldset>
+
+
+
+        <!-- KING GAS -->
+
+        <fieldset class="gas-card kinggas">
+
+          <legend>
+            King Gas rosado
+          </legend>
+
+
+          <label>
+
+            Llenos disponibles
+
+            <input
+              id="kinggasFull"
+              type="number"
+              min="0"
+              step="1"
+              value="60"
+              required
+            >
+
+          </label>
+
+
+          <label>
+
+            Vacíos
+
+            <input
+              id="kinggasEmpty"
+              type="number"
+              min="0"
+              step="1"
+              value="3"
+              required
+            >
+
+          </label>
+
+
+          <label>
+
+            Llenos reservados
+
+            <input
+              id="kinggasReserved"
+              type="number"
+              min="0"
+              step="1"
+              value="0"
+              required
+            >
+
+          </label>
+
+
+          <div class="inline-result">
+
+            Total físico:
+
+            <strong
+              id="kinggasOpeningTotal"
+            >
+              63
+            </strong>
+
+          </div>
+
+        </fieldset>
+
+      </div>
+
+
+
+      <label>
+
+        Nota opcional
+
+        <input
+          id="openingNote"
+          type="text"
+          placeholder="Ej. turno de mañana"
+        >
+
+      </label>
+
+
+
+      <div
+        class="warning-box"
+        id="openingWarning"
+        hidden
+      >
+
+        Ya existe un día abierto.
+        Si ya tiene movimientos,
+        primero debes cerrarlo.
+
+      </div>
+
+
+
+      <div class="form-actions">
+
+        <button
+          class="btn primary"
+          type="submit"
+        >
+          Guardar apertura
+        </button>
+
+      </div>
+
+    </form>
+
+  </section>
+
+
+
+  <!-- ===================================================
+       VENTAS
+  =================================================== -->
+
+  <section
+    class="view"
+    id="view-sales"
+  >
+
+    <div class="section-heading">
+
+      <div>
+
+        <p class="eyebrow">
+          PUNTO DE VENTA
+        </p>
+
+        <h2>
+          Registrar operación
+        </h2>
+
+        <p>
+          Una misma venta puede incluir Duragas y King Gas.
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <form
+      id="saleForm"
+      class="card form-card"
+    >
+
+
+      <!-- =============================================
+           TIPO DE ENTREGA
+      ============================================== -->
+
+      <div class="sale-mode-grid">
+
+
+        <button
+          class="mode-btn active"
+          type="button"
+          data-sale-mode="now"
+        >
+
+          <strong>
+            Entrega ahora
+          </strong>
+
+          <span>
+            Intercambio normal: vacío por lleno.
+          </span>
+
+        </button>
+
+
+
+        <button
+          class="mode-btn"
+          type="button"
+          data-sale-mode="later"
+        >
+
+          <strong>
+            Paga y retira después
+          </strong>
+
+          <span>
+            Deja vacíos y los llenos quedan reservados.
+          </span>
+
+        </button>
+
+      </div>
+
+
+      <input
+        id="saleMode"
+        type="hidden"
+        value="now"
+      >
+
+
+
+      <!-- =============================================
+           INFORMACIÓN GENERAL
+      ============================================== -->
+
+      <div class="form-grid two">
+
+
+        <div class="field-block">
+
+          <span class="field-label">
+            Fecha y hora
+          </span>
+
+
+          <div class="auto-time">
+
+            <span>
+              Automática
+            </span>
+
+            <strong
+              id="saleAutoDateTime"
+            >
+              —
+            </strong>
+
+          </div>
+
+        </div>
+
+
+
+        <label>
+
+          Cliente / referencia
+
+          <input
+            id="saleCustomer"
+            type="text"
+            list="customerSuggestions"
+            placeholder="Obligatorio solo si queda pendiente"
+            autocomplete="off"
+          >
+
+        </label>
+
+      </div>
+
+
+
+      <!-- =============================================
+           PEDIDO MIXTO
+      ============================================== -->
+
+      <div class="order-block">
+
+
+        <div class="order-block-head">
+
+          <div>
+
+            <span class="field-label">
+              Pedido
+            </span>
+
+            <small>
+              Selecciona cantidades por marca.
+              Puedes combinar ambas.
+            </small>
+
+          </div>
+
+
+          <strong id="saleUnitsTotal">
+            0 unidades
+          </strong>
+
+        </div>
+
+
+
+        <div class="gas-order-grid">
+
+
+          <!-- DURAGAS -->
+
+          <article class="product-card duragas">
+
+
+            <div class="product-title">
+
+              <span class="product-dot"></span>
+
+              <div>
+
+                <strong>
+                  Duragas
+                </strong>
+
+                <small>
+                  Amarillo
+                </small>
+
+              </div>
+
+            </div>
+
+
+            <div class="qty-stepper">
+
+              <button
+                type="button"
+                class="step-btn"
+                data-qty-step="-1"
+                data-gas="duragas"
+                aria-label="Restar Duragas"
+              >
+                −
+              </button>
+
+
+              <input
+                id="qtyDuragas"
+                type="number"
+                min="0"
+                step="1"
+                value="0"
+                inputmode="numeric"
+                aria-label="Cantidad Duragas"
+              >
+
+
+              <button
+                type="button"
+                class="step-btn"
+                data-qty-step="1"
+                data-gas="duragas"
+                aria-label="Sumar Duragas"
+              >
+                +
+              </button>
+
+            </div>
+
+
+            <div class="quick-picks compact">
+
+              <button
+                class="quick-btn"
+                type="button"
+                data-qty-set="1"
+                data-gas="duragas"
+              >
+                1
+              </button>
+
+              <button
+                class="quick-btn"
+                type="button"
+                data-qty-set="2"
+                data-gas="duragas"
+              >
+                2
+              </button>
+
+              <button
+                class="quick-btn"
+                type="button"
+                data-qty-set="4"
+                data-gas="duragas"
+              >
+                4
+              </button>
+
+              <button
+                class="quick-btn"
+                type="button"
+                data-qty-set="6"
+                data-gas="duragas"
+              >
+                6
+              </button>
+
+            </div>
+
+          </article>
+
+
+
+          <!-- KING GAS -->
+
+          <article class="product-card kinggas">
+
+
+            <div class="product-title">
+
+              <span class="product-dot"></span>
+
+              <div>
+
+                <strong>
+                  King Gas
+                </strong>
+
+                <small>
+                  Rosado
+                </small>
+
+              </div>
+
+            </div>
+
+
+            <div class="qty-stepper">
+
+              <button
+                type="button"
+                class="step-btn"
+                data-qty-step="-1"
+                data-gas="kinggas"
+                aria-label="Restar King Gas"
+              >
+                −
+              </button>
+
+
+              <input
+                id="qtyKinggas"
+                type="number"
+                min="0"
+                step="1"
+                value="0"
+                inputmode="numeric"
+                aria-label="Cantidad King Gas"
+              >
+
+
+              <button
+                type="button"
+                class="step-btn"
+                data-qty-step="1"
+                data-gas="kinggas"
+                aria-label="Sumar King Gas"
+              >
+                +
+              </button>
+
+            </div>
+
+
+            <div class="quick-picks compact">
+
+              <button
+                class="quick-btn"
+                type="button"
+                data-qty-set="1"
+                data-gas="kinggas"
+              >
+                1
+              </button>
+
+              <button
+                class="quick-btn"
+                type="button"
+                data-qty-set="2"
+                data-gas="kinggas"
+              >
+                2
+              </button>
+
+              <button
+                class="quick-btn"
+                type="button"
+                data-qty-set="4"
+                data-gas="kinggas"
+              >
+                4
+              </button>
+
+              <button
+                class="quick-btn"
+                type="button"
+                data-qty-set="6"
+                data-gas="kinggas"
+              >
+                6
+              </button>
+
+            </div>
+
+          </article>
+
+        </div>
+
+      </div>
+      <!-- =============================================
+           PRECIO + FORMA DE COBRO + DINERO
+      ============================================== -->
+
+      <div class="form-grid three">
+
+
+        <!-- PRECIO -->
+
+        <div class="field-block">
+
+          <span class="field-label">
+            Precio unitario
+          </span>
+
+          <!--
+            El precio queda oculto.
+            El usuario SOLO usa botones.
+          -->
+          <input
+            id="salePrice"
+            type="hidden"
+            value="2.25"
+          >
+
+
+          <div
+            class="price-buttons"
+            id="quickPriceButtons"
+          ></div>
+
+        </div>
+
+
+
+        <!-- FORMA DE COBRO -->
+
+        <div class="field-block">
+
+          <span class="field-label">
+            Forma de cobro
+          </span>
+
+
+          <input
+            id="salePaymentMethod"
+            type="hidden"
+            value="Efectivo"
+          >
+
+
+          <div class="segmented payment-segmented">
+
+            <button
+              class="segment active"
+              type="button"
+              data-payment-method="Efectivo"
+            >
+              Efectivo
+            </button>
+
+
+            <button
+              class="segment"
+              type="button"
+              data-payment-method="Transferencia"
+            >
+              Transferencia
+            </button>
+
+
+            <button
+              class="segment"
+              type="button"
+              data-payment-method="Fiado"
+            >
+              Fiado
+            </button>
+
+          </div>
+
+        </div>
+
+
+
+        <!-- DINERO RECIBIDO -->
+
+        <div
+          class="field-block"
+          id="receivedBlock"
+        >
+
+          <span class="field-label">
+            Dinero entregado
+          </span>
+
+
+          <input
+            id="saleReceived"
+            type="number"
+            min="0"
+            step="0.01"
+            value="0"
+            inputmode="decimal"
+          >
+
+
+          <div
+            class="quick-picks"
+            id="quickCashButtons"
+          >
+
+            <button
+              class="quick-btn"
+              type="button"
+              data-cash="0"
+            >
+              $0
+            </button>
+
+
+            <button
+              class="quick-btn exact"
+              type="button"
+              data-cash="exact"
+            >
+              Exacto
+            </button>
+
+
+            <button
+              class="quick-btn"
+              type="button"
+              data-cash="5"
+            >
+              $5
+            </button>
+
+
+            <button
+              class="quick-btn"
+              type="button"
+              data-cash="10"
+            >
+              $10
+            </button>
+
+
+            <button
+              class="quick-btn"
+              type="button"
+              data-cash="20"
+            >
+              $20
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+
+      <!-- =============================================
+           INTERCAMBIO DE TANQUES
+      ============================================== -->
+
+      <div
+        class="exchange-panel"
+        id="tankExchangeBlock"
+      >
+
+        <div>
+
+          <span class="field-label">
+            Tanques vacíos recibidos
+          </span>
+
+          <p>
+            Por defecto el sistema asume intercambio completo 1 a 1.
+          </p>
+
+        </div>
+
+
+        <input
+          id="saleTankMode"
+          type="hidden"
+          value="all"
+        >
+
+
+        <div class="segmented compact-segmented">
+
+          <button
+            class="segment active"
+            type="button"
+            data-tank-mode="all"
+          >
+            Trajo todos
+          </button>
+
+
+          <button
+            class="segment"
+            type="button"
+            data-tank-mode="missing"
+          >
+            Faltan tanques
+          </button>
+
+        </div>
+
+      </div>
+
+
+
+      <!-- =============================================
+           TANQUES FALTANTES POR MARCA
+      ============================================== -->
+
+      <div
+        class="missing-tanks"
+        id="emptyReceivedWrap"
+        hidden
+      >
+
+        <div class="missing-head">
+
+          <strong>
+            ¿Cuántos vacíos entregó realmente?
+          </strong>
+
+          <small>
+            Solo modifica la marca donde faltan tanques.
+          </small>
+
+        </div>
+
+
+        <div class="form-grid two">
+
+
+          <label>
+
+            Duragas vacíos recibidos
+
+            <input
+              id="emptyDuragas"
+              type="number"
+              min="0"
+              step="1"
+              value="0"
+              inputmode="numeric"
+            >
+
+          </label>
+
+
+
+          <label>
+
+            King Gas vacíos recibidos
+
+            <input
+              id="emptyKinggas"
+              type="number"
+              min="0"
+              step="1"
+              value="0"
+              inputmode="numeric"
+            >
+
+          </label>
+
+        </div>
+
+      </div>
+
+
+
+      <!-- =============================================
+           TOTAL Y VUELTO - PRIORIDAD VISUAL
+      ============================================== -->
+
+      <div class="money-hero-grid">
+
+
+        <!-- TOTAL -->
+
+        <div class="money-hero total-hero">
+
+          <span>
+            TOTAL A PAGAR
+          </span>
+
+          <strong
+            id="saleTotal"
+          >
+            $0.00
+          </strong>
+
+        </div>
+
+
+
+        <!-- VUELTO -->
+
+        <div class="money-hero change-hero">
+
+          <span>
+            VUELTO
+          </span>
+
+          <strong
+            id="saleChange"
+          >
+            $0.00
+          </strong>
+
+        </div>
+
+      </div>
+
+
+
+      <!-- =============================================
+           DATOS SECUNDARIOS
+      ============================================== -->
+
+      <div class="calc-panel four">
+
+
+        <div>
+
+          <span>
+            Cobrado
+          </span>
+
+          <strong
+            id="salePaidNow"
+          >
+            $0.00
+          </strong>
+
+        </div>
+
+
+
+        <div>
+
+          <span>
+            Debe dinero
+          </span>
+
+          <strong
+            id="saleMoneyDue"
+          >
+            $0.00
+          </strong>
+
+        </div>
+
+
+
+        <div>
+
+          <span>
+            Debe tanques
+          </span>
+
+          <strong
+            id="saleTanksDue"
+          >
+            0
+          </strong>
+
+        </div>
+
+
+
+        <div>
+
+          <span>
+            Pagado por retirar
+          </span>
+
+          <strong
+            id="salePendingPickup"
+          >
+            0
+          </strong>
+
+        </div>
+
+      </div>
+
+
+
+      <!-- =============================================
+           ESTADO AUTOMÁTICO
+      ============================================== -->
+
+      <div
+        class="operation-status good"
+        id="saleStatus"
+      >
+        Selecciona al menos un tanque.
+      </div>
+
+
+
+      <!-- OBSERVACIÓN -->
+
+      <label>
+
+        Observación
+
+        <textarea
+          id="saleNote"
+          rows="2"
+          placeholder="Solo si hace falta"
+        ></textarea>
+
+      </label>
+
+
+
+      <div class="form-actions">
+
+        <button
+          class="btn primary large"
+          type="submit"
+        >
+          Guardar operación
+        </button>
+
+      </div>
+
+    </form>
+
+
+
+    <!-- =============================================
+         OPERACIONES DEL DÍA
+    ============================================== -->
+
+    <article class="card">
+
+      <div class="card-header">
+
+        <div>
+
+          <h3>
+            Operaciones del día
+          </h3>
+
+          <p>
+            Una fila por venta;
+            el detalle puede contener ambas marcas.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="table-wrap">
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>
+                Hora
+              </th>
+
+              <th>
+                Cliente
+              </th>
+
+              <th>
+                Pedido
+              </th>
+
+              <th>
+                Precio
+              </th>
+
+              <th>
+                Total
+              </th>
+
+              <th>
+                Cobrado
+              </th>
+
+              <th>
+                Estado
+              </th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody
+            id="salesBody"
+          ></tbody>
+
+        </table>
+
+      </div>
+
+    </article>
+
+  </section>
+
+
+
+  <!-- ===================================================
+       PENDIENTES
+  =================================================== -->
+
+  <section
+    class="view"
+    id="view-accounts"
+  >
+
+    <div class="section-heading">
+
+      <div>
+
+        <p class="eyebrow">
+          CLIENTES
+        </p>
+
+        <h2>
+          Pendientes
+        </h2>
+
+        <p>
+          El sistema los clasifica automáticamente;
+          aquí solo se saldan.
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <div
+      id="accountsCards"
+      class="pending-sections"
+    ></div>
+
+  </section>
+
+
+
+  <!-- ===================================================
+       INVENTARIO
+  =================================================== -->
+
+  <section
+    class="view"
+    id="view-inventory"
+  >
+
+    <div class="section-heading">
+
+      <div>
+
+        <p class="eyebrow">
+          STOCK
+        </p>
+
+        <h2>
+          Inventario actual
+        </h2>
+
+        <p>
+          Calculado desde apertura, ventas,
+          reservas, devoluciones, retiros y ajustes.
+        </p>
+
+      </div>
+
+    </div>
+
+
+
+    <div
+      id="inventoryDetails"
+      class="material-grid"
+    ></div>
+
+
+
+    <!-- =============================================
+         AJUSTE DE INVENTARIO
+    ============================================== -->
+
+    <form
+      id="adjustmentForm"
+      class="card form-card"
+    >
+
+      <div class="card-header">
+
+        <div>
+
+          <h3>
+            Ajuste de inventario
+          </h3>
+
+          <p>
+            Solo para reposición, rotura,
+            pérdida o corrección.
+          </p>
+
+        </div>
+
+      </div>
+
+
+
+      <div class="form-grid three">
+
+
+        <label>
+
+          Tipo de gas
+
+          <select
+            id="adjustmentGasType"
+          >
+
+            <option value="duragas">
+              Duragas amarillo
+            </option>
+
+            <option value="kinggas">
+              King Gas rosado
+            </option>
+
+          </select>
+
+        </label>
+
+
+
+        <label>
+
+          Existencia
+
+          <select
+            id="adjustmentBucket"
+          >
+
+            <option value="full">
+              Llenos disponibles
+            </option>
+
+            <option value="empty">
+              Vacíos
+            </option>
+
+            <option value="reserved">
+              Llenos reservados
+            </option>
+
+          </select>
+
+        </label>
+
+
+
+        <label>
+
+          Cambio
+
+          <input
+            id="adjustmentQty"
+            type="number"
+            step="1"
+            required
+            placeholder="Ej. 10 o -2"
+          >
+
+        </label>
+
+
+
+        <label class="wide">
+
+          Motivo
+
+          <input
+            id="adjustmentNote"
+            type="text"
+            required
+            placeholder="Ej. reposición, rotura, corrección"
+          >
+
+        </label>
+
+      </div>
+
+
+
+      <div class="form-actions">
+
+        <button
+          class="btn primary"
+          type="submit"
+        >
+          Aplicar ajuste
+        </button>
+
+      </div>
+
+    </form>
+
+  </section>
+
+
+
+  <!-- ===================================================
+       CIERRE
+  =================================================== -->
+
+  <section
+    class="view"
+    id="view-closing"
+  >
+
+    <div class="section-heading">
+
+      <div>
+
+        <p class="eyebrow">
+          PASO FINAL
+        </p>
+
+        <h2>
+          Cierre del día
+        </h2>
+
+        <p>
+          Compara inventario lógico,
+          efectivo esperado y conteo físico.
+        </p>
+
+      </div>
+
+    </div>
+
+
+
+    <form
+      id="closingForm"
+      class="card form-card"
+    >
+
+
+      <div class="form-grid three">
+
+
+        <!-- HORA -->
+
+        <div class="auto-time">
+
+          <span>
+            Hora automática
+          </span>
+
+          <strong
+            id="closingAutoDateTime"
+          >
+            —
+          </strong>
+
+        </div>
+
+
+
+        <!-- EFECTIVO -->
+
+        <label>
+
+          Efectivo contado
+
+          <input
+            id="closingCash"
+            type="number"
+            min="0"
+            step="0.01"
+            value="0"
+            required
+          >
+
+        </label>
+
+
+
+        <!-- OTROS GASTOS -->
+
+        <label>
+
+          Otros gastos del día
+
+          <input
+            id="closingOtherExpenses"
+            type="number"
+            min="0"
+            step="0.01"
+            value="0"
+          >
+
+        </label>
+
+      </div>
+
+
+
+      <!-- CONTEO FÍSICO -->
+
+      <div class="material-grid">
+
+
+        <!-- DURAGAS -->
+
+        <fieldset class="gas-card duragas">
+
+          <legend>
+            Conteo final - Duragas
+          </legend>
+
+
+          <label>
+
+            Llenos disponibles
+
+            <input
+              id="closingDuragasFull"
+              type="number"
+              min="0"
+              step="1"
+              required
+            >
+
+          </label>
+
+
+          <label>
+
+            Vacíos
+
+            <input
+              id="closingDuragasEmpty"
+              type="number"
+              min="0"
+              step="1"
+              required
+            >
+
+          </label>
+
+
+          <label>
+
+            Reservados
+
+            <input
+              id="closingDuragasReserved"
+              type="number"
+              min="0"
+              step="1"
+              required
+            >
+
+          </label>
+
+        </fieldset>
+
+
+
+        <!-- KING GAS -->
+
+        <fieldset class="gas-card kinggas">
+
+          <legend>
+            Conteo final - King Gas
+          </legend>
+
+
+          <label>
+
+            Llenos disponibles
+
+            <input
+              id="closingKinggasFull"
+              type="number"
+              min="0"
+              step="1"
+              required
+            >
+
+          </label>
+
+
+          <label>
+
+            Vacíos
+
+            <input
+              id="closingKinggasEmpty"
+              type="number"
+              min="0"
+              step="1"
+              required
+            >
+
+          </label>
+
+
+          <label>
+
+            Reservados
+
+            <input
+              id="closingKinggasReserved"
+              type="number"
+              min="0"
+              step="1"
+              required
+            >
+
+          </label>
+
+        </fieldset>
+
+      </div>
+
+
+
+      <label>
+
+        Observación
+
+        <textarea
+          id="closingNote"
+          rows="2"
+          placeholder="Ej. diferencia de 1 tanque"
+        ></textarea>
+
+      </label>
+
+
+
+      <div class="form-actions">
+
+        <button
+          class="btn primary"
+          type="submit"
+        >
+          Cerrar día
+        </button>
+
+      </div>
+
+    </form>
+
+
+
+    <div
+      id="closingSummary"
+      class="card"
+      hidden
+    ></div>
+
+  </section>
+
+
+
+  <!-- ===================================================
+       HISTORIAL
+  =================================================== -->
+
+  <section
+    class="view"
+    id="view-history"
+  >
+
+    <div class="section-heading">
+
+      <div>
+
+        <p class="eyebrow">
+          ARCHIVO
+        </p>
+
+        <h2>
+          Historial
+        </h2>
+
+        <p>
+          Resumen financiero y de inventario
+          de cada día cerrado.
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <div
+      id="historyCards"
+      class="history-list"
+    ></div>
+
+  </section>
+
+
+
+  <!-- ===================================================
+       CONFIGURACIÓN
+  =================================================== -->
+
+  <section
+    class="view"
+    id="view-settings"
+  >
+
+    <div class="section-heading">
+
+      <div>
+
+        <p class="eyebrow">
+          REGLAS FIJAS
+        </p>
+
+        <h2>
+          Configuración
+        </h2>
+
+        <p>
+          Las reglas sensibles no se editan durante
+          la atención para evitar errores.
+        </p>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- REGLAS FIJAS -->
+
+    <div class="rule-grid">
+
+
+      <article class="card rule-card">
+
+        <span>
+          Marcas
+        </span>
+
+        <strong>
+          Duragas + King Gas
+        </strong>
+
+      </article>
+
+
+
+      <article class="card rule-card">
+
+        <span>
+          Precios permitidos
+        </span>
+
+        <strong>
+          $2.00 · $2.25 · $2.50
+        </strong>
+
+      </article>
+
+
+
+      <article class="card rule-card">
+
+        <span>
+          Costo de reposición
+        </span>
+
+        <strong>
+          $1.70 por unidad
+        </strong>
+
+      </article>
+
+
+
+      <article class="card rule-card">
+
+        <span>
+          Intercambio normal
+        </span>
+
+        <strong>
+          1 vacío ↔ 1 lleno
+        </strong>
+
+      </article>
+
+    </div>
+
+
+
+    <!-- DATOS LOCALES -->
+
+    <article class="card">
+
+      <div class="card-header">
+
+        <div>
+
+          <h3>
+            Datos locales
+          </h3>
+
+          <p>
+            La aplicación guarda la información
+            en este navegador mediante localStorage.
+          </p>
+
+        </div>
+
+      </div>
+
+
+
+      <div class="info-box">
+
+        Usa “Exportar respaldo” periódicamente.
+
+        Los datos de un navegador no aparecen
+        automáticamente en otro dispositivo.
+
+      </div>
+
+
+
+      <div class="form-actions">
+
+        <button
+          class="btn danger ghost"
+          id="resetBtn"
+          type="button"
+        >
+          Borrar todos los datos
+        </button>
+
+      </div>
+
+    </article>
+
+  </section>
+
+
+</main>
+
+
+
+<!-- =====================================================
+     CLIENTES GUARDADOS
+===================================================== -->
+
+<datalist
+  id="customerSuggestions"
+></datalist>
+
+
+
+<!-- =====================================================
+     MODAL DE PENDIENTES
+===================================================== -->
+
+<dialog id="paymentDialog">
+
+
+  <form
+    id="paymentForm"
+    class="dialog-card"
+  >
+
+
+    <div class="dialog-head">
+
+      <div>
+
+        <p class="eyebrow">
+          PENDIENTE
+        </p>
+
+        <h3
+          id="paymentDialogTitle"
+        >
+          Registrar movimiento
+        </h3>
+
+      </div>
+
+
+      <button
+        type="button"
+        class="icon-btn"
+        id="closeDialogBtn"
+        aria-label="Cerrar"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+
+    <input
+      type="hidden"
+      id="paymentAccountId"
+    >
+
+
+    <input
+      type="hidden"
+      id="paymentAction"
+    >
+
+
+
+    <!-- =============================================
+         PAGO DE DINERO
+    ============================================== -->
+
+    <div
+      id="paymentAmountWrap"
+      hidden
+    >
+
+      <label>
+
+        Monto que paga
+
+        <input
+          id="paymentAmount"
+          type="number"
+          min="0"
+          step="0.01"
+        >
+
+      </label>
+
+
+
+      <div class="field-block dialog-method">
+
+        <span class="field-label">
+          Forma de pago
+        </span>
+
+
+        <input
+          id="pendingPaymentMethod"
+          type="hidden"
+          value="Efectivo"
+        >
+
+
+        <div class="segmented">
+
+          <button
+            class="segment active"
+            type="button"
+            data-pending-payment-method="Efectivo"
+          >
+            Efectivo
+          </button>
+
+
+          <button
+            class="segment"
+            type="button"
+            data-pending-payment-method="Transferencia"
+          >
+            Transferencia
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- =============================================
+         DEVOLUCIÓN DE TANQUES
+    ============================================== -->
+
+    <div
+      id="paymentTanksWrap"
+      hidden
+    >
+
+      <p class="dialog-help">
+        Indica únicamente los tanques
+        que realmente devolvió hoy.
+      </p>
+
+
+      <div class="form-grid two">
+
+
+        <label>
+
+          Duragas
+
+          <input
+            id="paymentTankDuragas"
+            type="number"
+            min="0"
+            step="1"
+            value="0"
+          >
+
+        </label>
+
+
+
+        <label>
+
+          King Gas
+
+          <input
+            id="paymentTankKinggas"
+            type="number"
+            min="0"
+            step="1"
+            value="0"
+          >
+
+        </label>
+
+      </div>
+
+
+      <p
+        class="subtle"
+        id="paymentTankHint"
+      ></p>
+
+    </div>
+
+
+
+    <!-- =============================================
+         RETIRO DE GAS RESERVADO
+    ============================================== -->
+
+    <div
+      id="paymentPickupWrap"
+      hidden
+    >
+
+      <p class="dialog-help">
+        Puedes entregar la reserva completa
+        o solo una parte.
+      </p>
+
+
+      <div class="form-grid two">
+
+
+        <label>
+
+          Duragas a retirar
+
+          <input
+            id="paymentPickupDuragas"
+            type="number"
+            min="0"
+            step="1"
+            value="0"
+          >
+
+        </label>
+
+
+
+        <label>
+
+          King Gas a retirar
+
+          <input
+            id="paymentPickupKinggas"
+            type="number"
+            min="0"
+            step="1"
+            value="0"
+          >
+
+        </label>
+
+      </div>
+
+
+      <p
+        class="subtle"
+        id="paymentPickupHint"
+      ></p>
+
+    </div>
+
+
+
+    <!-- NOTA -->
+
+    <label>
+
+      Nota opcional
+
+      <input
+        id="paymentNote"
+        type="text"
+        placeholder="Ej. pagó en efectivo"
+      >
+
+    </label>
+
+
+
+    <div class="form-actions">
+
+      <button
+        class="btn primary"
+        type="submit"
+      >
+        Guardar movimiento
+      </button>
+
+    </div>
+
+  </form>
+
+</dialog>
+
+
+
+<!-- =====================================================
+     TOAST
+===================================================== -->
+
+<div
+  class="toast"
+  id="toast"
+  role="status"
+  aria-live="polite"
+></div>
+
+
+
+<!-- =====================================================
+     JAVASCRIPT
+===================================================== -->
+
+<script src="app.js"></script>
+
+
+</body>
+
+</html>
